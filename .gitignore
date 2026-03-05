@@ -27,3 +27,7 @@
 /tools/php-cs-fixer/vendor
 /tools/phpstan/vendor
 ###< Stephen ###
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
