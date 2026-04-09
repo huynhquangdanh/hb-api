@@ -7,11 +7,40 @@ use App\Traits\IDScheme;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\State\OrderProcessor;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'orders')]
+#[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(processor: OrderProcessor::class),
+        new Patch(),
+        new Delete(),
+    ]
+)]
 
 class Order implements IDable
 {
     use IDScheme;
 
+    public function __construct(Customer $customer)
+    {
+        $this->customer = $customer;
+        $this->products = new ArrayCollection();
+    }
+
+    #[ApiProperty(writable: false)]
     #[ORM\Column(length: 255)]
     private ?string $manufacturingNumber = null;
 
@@ -21,15 +50,11 @@ class Order implements IDable
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private DateTimeImmutable $deliveryDate;
 
-    /**
-     * @var DateTimeImmutable[]|null
-     */
-    #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $historyOfReleasing = null;
-
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Customer $customer = null;
+    private Customer $customer;
+
+    #[ORM\OneToMany(targetEntity: Product::class, mappedBy: "order")]
+    private Collection $products;
 
     public function getManufacturingNumber(): ?string
     {
@@ -64,20 +89,4 @@ class Order implements IDable
         return $this;
     }
 
-    /**
-     * @return DateTimeImmutable[]|null
-     */
-    public function getHistoryOfReleasing(): ?array
-    {
-        return $this->historyOfReleasing;
-    }
-
-    /**
-     * @param DateTimeImmutable[]|null $historyOfReleasing
-     */
-    public function setHistoryOfReleasing(?array $historyOfReleasing): self
-    {
-        $this->historyOfReleasing = $historyOfReleasing;
-        return $this;
-    }
 }

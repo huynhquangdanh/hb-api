@@ -5,11 +5,12 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Interface\IDable;
 use App\Traits\IDScheme;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
+#[ORM\Table(name: 'customers')]
 #[ApiResource]
 class Customer implements IDable
 {
@@ -35,6 +36,17 @@ class Customer implements IDable
 
     #[ORM\OneToMany(targetEntity: QualityPreset::class, mappedBy: "customer")]
     private Collection $qualityPresets;
+
+    public function __construct(string $name, string $taxCode, string $phone, string $email, string $address)
+    {
+        $this->name = $name;
+        $this->taxCode = $taxCode;
+        $this->phone = $phone;
+        $this->email = $email;
+        $this->address = $address;
+        $this->orders = new ArrayCollection();
+        $this->qualityPresets = new ArrayCollection();
+    }
 
     public function getName(): ?string
     {
